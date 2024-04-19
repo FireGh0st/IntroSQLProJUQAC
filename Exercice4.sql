@@ -24,3 +24,22 @@ BEGIN
     RETURN identifiant_etudiant;
 END$
 DELIMITER ;
+
+CREATE VIEW Vue_Aires_Stationnement AS
+SELECT
+    universite.nom_universite AS 'Nom de l\'université',
+    espace_stationnement.designation_espace_stationnement AS 'Espace de stationnement',
+    allee.designation_allee AS 'Allée',
+    COUNT(DISTINCT CASE WHEN place.disponibilite = 'Oui' THEN place.id_place END) AS 'Nombre de places disponibles',
+    COUNT(DISTINCT CASE WHEN place.disponibilite = 'Non' THEN place.id_place END) AS 'Nombre de places réservées'
+FROM
+    universite
+JOIN
+    espace_stationnement ON universite.id_universite = espace_stationnement.id_universite
+JOIN
+    allee ON espace_stationnement.id_espace_stationnement = allee.id_espace_stationnement
+JOIN
+    place ON allee.id_allee = place.id_allee
+
+GROUP BY
+    universite.nom_universite, espace_stationnement.designation_espace_stationnement, allee.designation_allee;
