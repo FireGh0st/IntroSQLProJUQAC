@@ -55,8 +55,6 @@ BEGIN
 END$
 DELIMITER ;
 
-CALL NouvelleAireStationnement('Université de Montréal', 'UdeM', '2900', 'Edouard', 'Montréal', 'Québec', 'H3T 1J4');
-
 -- Exercice 1.2
 
 DROP TABLE IF EXISTS `log_aire_stationnement`;
@@ -85,7 +83,3 @@ BEGIN
   VALUES(nom_univ, sigl, NOW());
 END$
 DELIMITER ;
-
-INSERT INTO espace_stationnement(designation_espace_stationnement,id_universite)
-VALUES('Trigger', 1);
-SELECT * FROM log_aire_stationnement;

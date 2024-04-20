@@ -88,7 +88,3 @@ BEGIN
     WHERE id_allee = (SELECT id_allee FROM place WHERE id_place = NEW.id_place);
 END$
 DELIMITER ;
-
--- Test the procedure
-
-CALL ReserverPlaceStationnement(1, '2021-12-01', '08:00:00', '2021-12-01', '09:00:00');

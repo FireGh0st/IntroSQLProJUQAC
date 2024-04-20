@@ -51,10 +51,6 @@ BEGIN
 
 end $
 
-DELETE FROM etudiant WHERE nom_etudiant='pochard';
-CALL NouvelEtudiant('pochart', 'clement', 'POCC05020400', 'NTM ARD', 'clement.pochart@epita.fr', '0612233462', 0, 1);
-CALL NouvelEtudiant('hatton', 'lilian', 'HATL05020400', 'NTM,BATARD', 'lilian.hatton@epita.fr', '0612243462', 0, 1);
-
 DELIMITER $
 DROP PROCEDURE IF EXISTS AfficherEtudiant$
 CREATE PROCEDURE AfficherEtudiant(
@@ -63,7 +59,6 @@ CREATE PROCEDURE AfficherEtudiant(
 BEGIN
     SELECT * FROM etudiant WHERE id_etudiant=id;
 end $
-CALL AfficherEtudiant('ETU-000002');
 
 DELIMITER $
 DROP PROCEDURE IF EXISTS ModifierEtudiant$
@@ -121,8 +116,6 @@ BEGIN
     WHERE id_etudiant=id;
 end $
 
-CALL SupprimerEtudiant('ETU-000002');
-
 DROP TABLE IF EXISTS historique_etudiant$
 CREATE TABLE historique_etudiant (
     id_historique INT AUTO_INCREMENT PRIMARY KEY,
@@ -148,6 +141,3 @@ BEGIN
 END;
 $
 DELIMITER ;
-
-CALL ModifierEtudiant(1, 'pochard', null, null, null, null, null, null);
-SELECT * FROM historique_etudiant;
