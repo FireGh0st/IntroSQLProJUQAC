@@ -35,8 +35,8 @@ BEGIN
         -- Créer trois allées
         WHILE i <= 3
             DO
-                INSERT INTO allee(id_espace_stationnement, designation_allee, sens_circulation, tarif_horaire)
-                VALUES (id_espace, CONCAT('Allee-', id_espace, '-', i), i, 4.5);
+                INSERT INTO allee(id_espace_stationnement, designation_allee, sens_circulation, nombre_places_dispo ,tarif_horaire)
+                VALUES (id_espace, CONCAT('Allee-', id_espace, '-', i), i, 10, 4.5);
 
                 SET id_allee = LAST_INSERT_ID();
 
