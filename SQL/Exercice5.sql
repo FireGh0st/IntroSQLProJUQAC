@@ -52,5 +52,3 @@ BEGIN
     CLOSE cur;
 END$
 DELIMITER ;
-
-CALL RapportAiresStationnement();
