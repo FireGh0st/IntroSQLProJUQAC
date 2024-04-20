@@ -29,26 +29,31 @@ database = mysql.connector.connect(
 
 cursor = database.cursor()
 
-def loadListFromFile(file : str):
+
+def loadListFromFile(file: str):
     with open(file, "r") as f:
         return f.readlines()
+
 
 names = loadListFromFile(name_reference)
 firstnames = loadListFromFile(firstname_reference)
 emails = loadListFromFile(email_reference)
 
+
 #Generate a phone Number on the american format
 def phoneNumberGenerator():
     return f"{random.randint(100, 999)}{random.randint(100, 999)}{random.randint(1000, 9999)}"
 
-def generate_random_date(start_date : datetime, end_date : datetime):
+
+def generate_random_date(start_date: datetime, end_date: datetime):
     random_date = start_date + datetime.timedelta(
         seconds=random.randint(0, int((end_date - start_date).total_seconds())),
     )
 
     return random_date
 
-def generateCodePermanent(name : str, firstname : str):
+
+def generateCodePermanent(name: str, firstname: str):
     """
     Generate a code permanent based on the name and firstname of the student
     Format 'NNNFDDMMAAAA'
@@ -61,6 +66,7 @@ def generateCodePermanent(name : str, firstname : str):
 
     return f"{name[:3].upper()}{firstname[:1].upper()}{birthdate.strftime('%d%m%Y')}"
 
+
 def generatePlaque():
     """
     Generate a random license plate
@@ -71,6 +77,7 @@ def generatePlaque():
     nbs = [random.choice('0123456789') for _ in range(3)]
     return f"{''.join(chars)} {''.join(nbs)}"
 
+
 #generate a new etudiant(id_etudiant, nom_etudiant, prenom_etudiant, code_permanent, numero_plaque, courriel_etudiant, telephone_etudiant, supprime, id_universite)
 
 def generateStudent():
@@ -78,36 +85,28 @@ def generateStudent():
     firstname = random.choice(firstnames).strip()
     code_permanent = generateCodePermanent(lastname, firstname)
     numero_plaque = generatePlaque()
-    courriel = f"{firstname.lower()}.{lastname.lower()}.{random.randint(1000,9999)}@{random.choice(emails).strip()}"
+    courriel = f"{firstname.lower()}.{lastname.lower()}.{random.randint(1000, 9999)}@{random.choice(emails).strip()}"
     telephone = phoneNumberGenerator()
     supprime = random.choice([0, 1])
     id_universite = random.randint(1, 7)
 
-    return {
-        "nom_etudiant": lastname,
-        "prenom_etudiant": firstname,
-        "code_permanent": code_permanent,
-        "numero_plaque": numero_plaque,
-        "courriel_etudiant": courriel,
-        "telephone_etudiant": telephone,
-        "supprime": supprime,
-        "id_universite": id_universite
-    }
+    return (lastname, firstname, code_permanent, numero_plaque, courriel, telephone, supprime, id_universite)
 
 
-def pushStudents(numbers : int):
-    for i in range(numbers):
-        student = generateStudent()
+def pushStudents(numbers: int):
+    for i in range(numbers // 100):
+        students = [generateStudent() for _ in range(100)]
         try:
-            cursor.execute(
+            cursor.executemany(
                 "CALL NouvelEtudiant(%s, %s, %s, %s, %s, %s, %s, %s)",
-                (student["nom_etudiant"], student["prenom_etudiant"], student["code_permanent"], student["numero_plaque"], student["courriel_etudiant"], student["telephone_etudiant"], student["supprime"], student["id_universite"])
+                students
             )
-            database.commit()
-
-        except mysql.connector.Error as e:
+        except Exception as e:
             print(e)
-            print(student)
+        finally:
+            database.commit()
+            print(f"{i * 100} students inserted")
+
 
 
 def generateAgent():
@@ -118,17 +117,18 @@ def generateAgent():
         "prenom_agent": firstname
     }
 
-def pushAgents(numbers : int):
+
+def pushAgents(numbers: int):
     for i in range(numbers):
         agent = generateAgent()
         cursor.execute(
             "INSERT INTO agent (nom_agent, prenom_agent) VALUES (%s, %s)",
             (agent["nom_agent"], agent["prenom_agent"])
         )
-
     database.commit()
 
-pushStudents(500000)
+
+pushStudents(100000)
 pushAgents(100)
 
 cursor.close()
