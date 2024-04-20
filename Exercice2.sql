@@ -26,7 +26,7 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Les informations d\'etudiant ne peuvent pas etre nulles';
     end if ;
 
-    IF NOT cperm REGEXP '[A-Z]{4}[0-9]{6}' THEN
+    IF NOT cperm REGEXP '[A-Z]{4}[0-9]{8}' THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Code permanent invalide';
     end if ;
 
