@@ -1,4 +1,5 @@
 DELIMITER $
+DROP FUNCTION IF EXISTS GenererIdentifiantEtudiant$
 CREATE FUNCTION GenererIdentifiantEtudiant() RETURNS VARCHAR(10) DETERMINISTIC
 BEGIN
     DECLARE nombre_etudiants INT;
@@ -25,6 +26,7 @@ BEGIN
 END$
 DELIMITER ;
 
+DROP VIEW IF EXISTS Vue_Aires_Stationnement;
 CREATE VIEW Vue_Aires_Stationnement AS
 SELECT
     universite.nom_universite AS 'Nom de l\'université',
@@ -43,3 +45,28 @@ JOIN
 
 GROUP BY
     universite.nom_universite, espace_stationnement.designation_espace_stationnement, allee.designation_allee;
+
+
+DELIMITER $
+DROP EVENT IF EXISTS MettreAJourDisponibilite$
+CREATE EVENT MettreAJourDisponibilite
+ON SCHEDULE EVERY 5 MINUTE DO
+BEGIN
+    -- Identifier les places dont toutes les réservations sont terminées
+    CREATE TEMPORARY TABLE PlacesDisponibles AS
+    SELECT place.id_place
+    FROM place
+    LEFT JOIN place_reservee ON place.id_place = place_reservee.id_place
+    WHERE place_reservee.date_heure_fin < NOW() OR place_reservee.date_heure_fin IS NULL
+    GROUP BY place.id_place
+    HAVING COUNT(place_reservee.date_heure_fin >= NOW() OR NULL) = 0;
+
+    -- Mettre à jour la disponibilité des places identifiées
+    UPDATE place
+    SET disponibilite = 'Oui'
+    WHERE id_place IN (SELECT id_place FROM PlacesDisponibles);
+
+    -- Supprimer la table temporaire
+    DROP TEMPORARY TABLE PlacesDisponibles;
+END$
+DELIMITER ;
