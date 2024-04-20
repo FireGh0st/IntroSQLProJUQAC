@@ -75,7 +75,7 @@ CREATE PROCEDURE ModifierEtudiant(
 BEGIN
 
     -- IF cperm IS NOT NULL AND NOT cperm REGEXP '[A-Z]{4}([0-2][0-9]|3[0-1])(0[0-9]|1[0-2])[0-9]{4}' THEN
-    IF cperm IS NOT NULL AND NOT cperm REGEXP '[A-Z]{4}[0-9]{6}' THEN
+    IF cperm IS NOT NULL AND NOT cperm REGEXP '[A-Z]{4}[0-9]{8}' THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Code permanent invalide';
     end if ;
 
@@ -131,6 +131,7 @@ CREATE TABLE historique_etudiant (
 );
 
 DELIMITER $
+DROP TRIGGER IF EXISTS etudiant_after_update$
 CREATE TRIGGER etudiant_after_update
 AFTER UPDATE
 ON etudiant
