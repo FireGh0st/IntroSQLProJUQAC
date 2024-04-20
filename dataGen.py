@@ -35,7 +35,7 @@ emails = loadListFromFile(email_reference)
 
 #Generate a phone Number on the american format
 def phoneNumberGenerator():
-    return f"{random.randint(100, 999)}-{random.randint(100, 999)}-{random.randint(1000, 9999)}"
+    return f"{random.randint(100, 999)}{random.randint(100, 999)}{random.randint(1000, 9999)}"
 
 def generate_random_date(start_date : datetime, end_date : datetime):
     random_date = start_date + datetime.timedelta(
@@ -95,15 +95,33 @@ def pushStudents(numbers : int):
     for i in range(numbers):
         student = generateStudent()
         cursor.execute(
-            "CALL insert_etudiant(%s, %s, %s, %s, %s, %s, %s, %s)",
+            "CALL NouvelEtudiant(%s, %s, %s, %s, %s, %s, %s, %s)",
             (student["nom_etudiant"], student["prenom_etudiant"], student["code_permanent"], student["numero_plaque"], student["courriel_etudiant"], student["telephone_etudiant"], student["supprime"], student["id_universite"])
         )
 
     database.commit()
-def uni_generator()
+
+def generateAgent():
+    lastname = random.choice(names).strip()
+    firstname = random.choice(firstnames).strip()
+    return {
+        "nom_agent": lastname,
+        "prenom_agent": firstname
+    }
+
+def pushAgents(numbers : int):
+    for i in range(numbers):
+        agent = generateAgent()
+        cursor.execute(
+            "INSERT INTO agent (nom_agent, prenom_agent) VALUES (%s, %s)",
+            (agent["nom_agent"], agent["prenom_agent"])
+        )
+
+    database.commit()
 
 
-if __name__ == "__main__":
-    for i in range(100):
-        student = generateStudent()
-        print(student)
+#pushStudents(500000)
+pushAgents(100)
+
+cursor.close()
+database.close()
