@@ -11,14 +11,6 @@ CREATE PROCEDURE NouvelEtudiant(
     IN univ INT
 )
 BEGIN
-    /*
-    DECLARE id VARCHAR(10);
-    DECLARE rand INT(6) ZEROFILL;
-    set rand = FLOOR(0 + (RAND() * 999999));
-    set id = CONCAT('ETU-',rand);
-
-    WHILE EXISTS(SELECT * FROM etudiant WHERE id_etudiant=id)
-    */
 
     DECLARE id VARCHAR(10);
     set id = (SELECT GenererIdentifiantEtudiant());
@@ -34,7 +26,7 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Les informations d\'etudiant ne peuvent pas etre nulles';
     end if ;
 
-    IF NOT cperm REGEXP '[A-Z]{4}([0-2][0-9]|3[0-1])(0[0-9]|1[0-2])[0-9]{4}' THEN
+    IF NOT cperm REGEXP '[A-Z]{4}[0-9]{6}' THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Code permanent invalide';
     end if ;
 
@@ -59,8 +51,8 @@ BEGIN
 
 end $
 
-DELETE FROM etudiant WHERE nom_etudiant='pochart';
-CALL NouvelEtudiant('pochart', 'clement', 'POCC05020400', 'NTM ARD', 'clement.pochart@epita.fr', NULL, 0, 1);
+DELETE FROM etudiant WHERE nom_etudiant='pochard';
+CALL NouvelEtudiant('pochart', 'clement', 'POCC05020400', 'NTM ARD', 'clement.pochart@epita.fr', '0612233462', 0, 1);
 CALL NouvelEtudiant('hatton', 'lilian', 'HATL05020400', 'NTM,BATARD', 'lilian.hatton@epita.fr', '0612243462', 0, 1);
 
 DELIMITER $
@@ -87,7 +79,8 @@ CREATE PROCEDURE ModifierEtudiant(
 )
 BEGIN
 
-    IF cperm IS NOT NULL AND NOT cperm REGEXP '[A-Z]{4}([0-2][0-9]|3[0-1])(0[0-9]|1[0-2])[0-9]{4}' THEN
+    -- IF cperm IS NOT NULL AND NOT cperm REGEXP '[A-Z]{4}([0-2][0-9]|3[0-1])(0[0-9]|1[0-2])[0-9]{4}' THEN
+    IF cperm IS NOT NULL AND NOT cperm REGEXP '[A-Z]{4}[0-9]{6}' THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Code permanent invalide';
     end if ;
 
@@ -107,15 +100,15 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'L\'universite n\'existe pas';
     end if ;
 
-    IF nom IS NOT NULL THEN UPDATE etudiant SET nom_etudiant=nom WHERE id_etudiant=id;
-    IF prenom IS NOT NULL THEN UPDATE etudiant SET prenom_etudiant=prenom WHERE id_etudiant=id;
-    IF cperm IS NOT NULL THEN UPDATE etudiant SET code_permanent=cperm WHERE id_etudiant=id;
-    IF nplaque IS NOT NULL THEN UPDATE etudiant SET numero_plaque=nplaque WHERE id_etudiant=id;
-    IF email IS NOT NULL THEN UPDATE etudiant SET courriel_etudiant=email WHERE id_etudiant=id;
-    IF phone IS NOT NULL THEN UPDATE etudiant SET telephone_etudiant=phone WHERE id_etudiant=id;
-    IF univ IS NOT NULL THEN UPDATE etudiant SET id_universite=univ WHERE id_etudiant=id;
+    IF nom IS NOT NULL THEN UPDATE etudiant SET nom_etudiant=nom WHERE id_etudiant=id; end if ;
+    IF prenom IS NOT NULL THEN UPDATE etudiant SET prenom_etudiant=prenom WHERE id_etudiant=id; end if ;
+    IF cperm IS NOT NULL THEN UPDATE etudiant SET code_permanent=cperm WHERE id_etudiant=id; end if ;
+    IF nplaque IS NOT NULL THEN UPDATE etudiant SET numero_plaque=nplaque WHERE id_etudiant=id; end if ;
+    IF email IS NOT NULL THEN UPDATE etudiant SET courriel_etudiant=email WHERE id_etudiant=id; end if ;
+    IF phone IS NOT NULL THEN UPDATE etudiant SET telephone_etudiant=phone WHERE id_etudiant=id; end if ;
+    IF univ IS NOT NULL THEN UPDATE etudiant SET id_universite=univ WHERE id_etudiant=id; end if ;
 
-end $
+END $
 
 DELIMITER $
 DROP PROCEDURE IF EXISTS SupprimerEtudiant$
@@ -129,3 +122,32 @@ BEGIN
 end $
 
 CALL SupprimerEtudiant('ETU-000002');
+
+DROP TABLE IF EXISTS historique_etudiant$
+CREATE TABLE historique_etudiant (
+    id_historique INT AUTO_INCREMENT PRIMARY KEY,
+    id_etudiant VARCHAR(10),
+    nom_etudiant VARCHAR(45),
+    prenom_etudiant VARCHAR(60),
+    code_permanent VARCHAR(15),
+    numero_plaque VARCHAR(10),
+    courriel_etudiant VARCHAR(55),
+    telephone_etudiant VARCHAR(10),
+    id_universite INT,
+    date_modification DATETIME
+);
+
+DELIMITER $
+CREATE TRIGGER etudiant_after_update
+AFTER UPDATE
+ON etudiant
+FOR EACH ROW
+BEGIN
+    INSERT INTO historique_etudiant(id_etudiant, nom_etudiant, prenom_etudiant, code_permanent, numero_plaque, courriel_etudiant, telephone_etudiant, id_universite, date_modification)
+    VALUES(OLD.id_etudiant, OLD.nom_etudiant, OLD.prenom_etudiant, OLD.code_permanent, OLD.numero_plaque, OLD.courriel_etudiant, OLD.telephone_etudiant, OLD.id_universite, NOW());
+END;
+$
+DELIMITER ;
+
+CALL ModifierEtudiant(1, 'pochard', null, null, null, null, null, null);
+SELECT * FROM historique_etudiant;
